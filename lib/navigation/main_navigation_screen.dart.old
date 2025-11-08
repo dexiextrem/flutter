@@ -1,0 +1,94 @@
+// lib/navigation/main_navigation_screen.dart
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+// Imports των οθονών
+import '../screens/home_screen.dart';
+import '../screens/news_list_screen.dart';
+import '../screens/categories_screen.dart';
+import '../screens/about_screen.dart';
+import '../providers/theme_provider.dart'; // Για το κουμπί Dark/Light Mode
+
+class MainNavigationScreen extends ConsumerStatefulWidget {
+  const MainNavigationScreen({super.key});
+
+  @override
+  ConsumerState<MainNavigationScreen> createState() => _MainNavigationScreenState();
+}
+
+class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
+  // 1. Κατάσταση για την τρέχουσα επιλεγμένη καρτέλα
+  int _selectedIndex = 0;
+
+  // 2. Λίστα με τις κύριες οθόνες της εφαρμογής
+  final List<Widget> _screens = const [
+    HomeScreen(),
+    NewsListScreen(),
+    CategoriesScreen(),
+    AboutScreen(),
+  ];
+
+  // 3. Μέθοδος για την αλλαγή της καρτέλας
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 4. Ελέγχουμε την τρέχουσα λειτουργία του θέματος
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
+    // Σημείωση: Δεν χρειάζεται Scaffold εδώ, καθώς κάθε οθόνη έχει το δικό της Scaffold. 
+    // Ωστόσο, για να έχουμε AppBar (που είναι το ίδιο σε όλες τις κύριες οθόνες), 
+    // το βάζουμε εδώ και το αφαιρούμε από τις επιμέρους οθόνες.
+    
+    return Scaffold(
+      // 5. AppBar (Κοινό σε όλες τις καρτέλες)
+      appBar: AppBar(
+        title: const Text('HVA Νέα'),
+        actions: [
+          // Κουμπί Εναλλαγής Θέματος (Dark/Light Mode)
+          IconButton(
+            icon: Icon(isDarkMode ? Icons.wb_sunny : Icons.nights_stay),
+            onPressed: () {
+              // Καλούμε τη μέθοδο του ThemeNotifier μέσω του Riverpod
+              ref.read(themeProvider.notifier).switchTheme();
+            },
+          ),
+          const SizedBox(width: 10),
+        ],
+      ),
+      
+      // 6. Εμφάνιση της επιλεγμένης οθόνης
+      body: _screens[_selectedIndex],
+      
+      // 7. Bottom Navigation Bar
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Αρχική',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.article),
+            label: 'Νέα',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.category),
+            label: 'Κατηγορίες',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.info),
+            label: 'Σχετικά',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed, // Όλες οι καρτέλες είναι πάντα ορατές
+      ),
+    );
+  }
+}
