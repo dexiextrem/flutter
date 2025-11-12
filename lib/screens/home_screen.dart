@@ -1,4 +1,4 @@
-// lib/screens/home_screen.dart
+// lib/screens/home_screen.dart (ΤΕΛΙΚΟ – ΧΟΡΗΓΟΣ ΚΑΤΩ, ΚΑΡΤΑ ΚΕΝΤΡΑΡΙΣΜΕΝΗ)
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,153 +11,189 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final topArticles = ref.watch(top3NewsProvider);
-    final isLoading = ref.watch(newsProvider.select((s) => s.isLoading));
+    final top3Async = ref.watch(top3NewsProvider);
 
     return Scaffold(
-      // GRADIENT BACKGROUND ΑΠΟ ΠΑΝΩ ΜΕΧΡΙ ΚΑΤΩ
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF6A1B9A), // Μωβ πάνω
-              Color(0xFF8E24AA),
-              Color(0xFFAB47BC),
-              Color(0xFFCE93D8), // Ανοιχτό μωβ κάτω
-            ],
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await ref.read(top3NewsProvider.notifier).fetchTop3();
+        },
+        color: const Color(0xFF6A1B9A),
+        backgroundColor: Colors.white,
+        strokeWidth: 3,
+        displacement: 40,
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF6A1B9A), Color(0xFFF3E5F5)],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // 1/4 ΠΑΝΩ: Logo + Τίτλος (ΜΕ ΤΙΣ ΔΙΚΕΣ ΣΟΥ ΑΛΛΑΓΕΣ)
-              Container(
-                padding: const EdgeInsets.fromLTRB(10, 20, 10, 20), // ΜΙΚΡΟ PADDING ΚΑΤΩ
-                child: Row(
+          child: SafeArea(
+            child: Stack( // ΧΡΗΣΙΜΟΠΟΙΟΥΜΕ Stack
+              children: [
+                // ΑΝΑΝΕΩΣΙΜΟ ΠΕΡΙΕΧΟΜΕΝΟ (ΚΑΡΤΑ)
+                ListView(
                   children: [
-                    Image.asset('assets/images/hva_logo.png', height: 130), // Το δικό σου μέγεθος
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Text(
-                        'ΠΑΝΕΛΛΗΝΙΟΣ\nΚΤΗΝΙΑΤΡΙΚΟΣ\nΣΥΛΛΟΓΟΣ',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 28, // Το δικό σου μέγεθος
-                          fontWeight: FontWeight.bold,
-                          height: 1.15,
-                        ),
+                    // LOGO + TITLE
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(10, 20, 10, 10),
+                      child: Row(
+                        children: [
+                          Image.asset('assets/images/hva_logo.png', height: 130),
+                          const SizedBox(width: 14),
+                          const Expanded(
+                            child: Text(
+                              'ΠΑΝΕΛΛΗΝΙΟΣ\nΚΤΗΝΙΑΤΡΙΚΟΣ\nΣΥΛΛΟΓΟΣ',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                                height: 1.1,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
 
-              // 2/4 ΜΕΣΗ: ΜΙΑ ΚΑΡΤΑ ΜΕ 3 ΕΙΔΗΣΕΙΣ (ΣΤΑΘΕΡΟ ΥΨΟΣ, ΧΩΡΙΣ SCROLL)
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.only(top: 10), // ΜΙΚΡΟ PADDING ΠΑΝΩ
-                height: MediaQuery.of(context).size.height * 0.45, // Σταθερό 50% της οθόνης
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4)),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                      child: Text(
-                        'Τελευταία Νέα',
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF6A1B9A),
+                    // ΚΕΝΤΡΙΚΗ ΚΑΡΤΑ – ΚΕΝΤΡΑΡΙΣΜΕΝΗ
+                    const SizedBox(height: 30),
+                    Center(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.only(top: 10),
+                        constraints: BoxConstraints(
+                          maxWidth: 600,
+                          maxHeight: MediaQuery.of(context).size.height * 0.55,
                         ),
-                      ),
-                    ),
-                    Expanded(
-                      child: isLoading && topArticles.isEmpty
-                          ? const Center(child: CircularProgressIndicator(color: Color(0xFF6A1B9A)))
-                          : Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: ListView.builder(
-                                physics: const NeverScrollableScrollPhysics(), // ΧΩΡΙΣ SCROLL
-                                itemCount: topArticles.length,
-                                itemBuilder: (context, index) {
-                                  final article = topArticles[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 16),
-                                    child: InkWell(
-                                      onTap: () => Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (_) => DetailScreen(article: article)),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          // ΤΙΤΛΟΣ: 3 ΓΡΑΜΜΕΣ + ΑΥΤΟΜΑΤΟ ΜΙΚΡΑΙΝΕΙ ΑΝ ΧΡΕΙΑΖΕΤΑΙ
-                                          Text(
-                                            article.title,
-                                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                                            maxLines: 3,
-                                            overflow: TextOverflow.ellipsis,
-                                            softWrap: true,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(color: Colors.black26, blurRadius: 10, offset: const Offset(0, 4)),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                              child: Text(
+                                'Τελευταία Νέα',
+                                style: TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF6A1B9A),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+
+                            top3Async.when(
+                              data: (topArticles) {
+                                if (topArticles.isEmpty) {
+                                  return const Padding(
+                                    padding: EdgeInsets.all(40),
+                                    child: Text('Δεν βρέθηκαν άρθρα'),
+                                  );
+                                }
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    itemCount: topArticles.length,
+                                    itemBuilder: (context, index) {
+                                      final article = topArticles[index];
+                                      return Padding(
+                                        padding: const EdgeInsets.only(bottom: 10),
+                                        child: InkWell(
+                                          onTap: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(builder: (_) => DetailScreen(initialArticle: article)),
                                           ),
-                                          const SizedBox(height: 4),
-                                          // ΗΜΕΡΟΜΗΝΙΑ: ΕΜΦΑΝΙΖΕΤΑΙ ΠΑΝΤΑ
-                                          Row(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-                                              const SizedBox(width: 6),
                                               Text(
-                                                article.date,
-                                                style: const TextStyle(color: Colors.grey, fontSize: 13),
+                                                article.title,
+                                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                                maxLines: 3,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                children: [
+                                                  const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                                                  const SizedBox(width: 6),
+                                                  Text(
+                                                    article.date,
+                                                    style: const TextStyle(color: Colors.grey, fontSize: 13),
+                                                  ),
+                                                ],
                                               ),
                                             ],
                                           ),
-                                          if (index < topArticles.length - 1)
-                                            const Padding(
-                                              padding: EdgeInsets.only(top: 12),
-                                              child: Divider(height: 1, color: Colors.grey),
-                                            ),
-                                        ],
-                                      ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                              loading: () => const Padding(
+                                padding: EdgeInsets.all(40),
+                                child: CircularProgressIndicator(color: Color(0xFF6A1B9A)),
+                              ),
+                              error: (err, _) => Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  children: [
+                                    const Icon(Icons.error, color: Colors.red, size: 60),
+                                    Text('Σφάλμα: $err'),
+                                    ElevatedButton(
+                                      onPressed: () => ref.read(top3NewsProvider.notifier).fetchTop3(),
+                                      child: const Text('Προσπάθησε ξανά'),
                                     ),
-                                  );
-                                },
+                                  ],
+                                ),
                               ),
                             ),
+                            const SizedBox(height: 20),
+                          ],
+                        ),
+                      ),
                     ),
+                    const SizedBox(height: 120), // ΧΩΡΟΣ ΓΙΑ ΧΟΡΗΓΟ
                   ],
                 ),
-              ),
 
-              const Spacer(), // ΧΩΡΟΣ ΑΝΑΜΕΣΑ ΣΤΑ 2 CONTAINERS
-
-              // 1/4 ΚΑΤΩ: Χορηγός + Logo
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: Column(
-                children: [
-                  const Text(
-                    'ΧΟΡΗΓΟΣ:',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 215, 203, 223)),
+                // ΧΟΡΗΓΟΣ – ΣΤΑΘΕΡΟΣ ΚΑΤΩ
+                Positioned(
+                  bottom: 10,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'ΧΟΡΗΓΟΣ:',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF6A1B9A)),
+                        ),
+                        const SizedBox(height: 8),
+                        Image.asset('assets/images/sponsor_logo.png', height: 65),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 0),
-                  Image.asset('assets/images/sponsor_logo.png', height: 65),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
           ),
         ),
       ),
 
-      // BOTTOM NAVIGATION
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white,
         type: BottomNavigationBarType.fixed,
