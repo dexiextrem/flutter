@@ -1,13 +1,15 @@
 // lib/screens/detail_screen.dart (ΤΕΛΙΚΟ – ΜΕ BOTTOM NAV + SAFEAREA)
 
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_html/flutter_html.dart'; 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/article.dart';
-import '../providers/news_provider.dart';
+import '../providers/news_provider.dart'; // Εισάγει τον top3NewsProvider
 import 'home_screen.dart';
 import 'news_list_screen.dart';
+import 'package:url_launcher/url_launcher.dart'; 
+
 
 class DetailScreen extends ConsumerStatefulWidget {
   final Article initialArticle;
@@ -24,14 +26,45 @@ class _DetailScreenState extends ConsumerState<DetailScreen> {
   void initState() {
     super.initState();
     final id = int.tryParse(widget.initialArticle.id) ?? 0;
-    _articleFuture = ref.read(top3NewsProvider.notifier).fetchArticle(id);
+    // ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε top3NewsProvider.notifier
+    _articleFuture = ref.read(top3NewsProvider.notifier).fetchArticle(id); 
   }
 
   Future<void> _refresh() async {
     setState(() {
       final id = int.tryParse(widget.initialArticle.id) ?? 0;
+      // ΔΙΟΡΘΩΣΗ: Χρησιμοποιούμε top3NewsProvider.notifier
       _articleFuture = ref.read(top3NewsProvider.notifier).fetchArticle(id);
     });
+  }
+
+  // ΣΥΝΑΡΤΗΣΗ: Για άνοιγμα URL - Πιο ισχυρή και με ανατροφοδότηση χρήστη
+  Future<void> _launchURL(String? url) async {
+    if (url != null) {
+      String fullUrl = url;
+      
+      // ΒΗΜΑ 1: Προσθέτουμε HTTPS αν λείπει το πρωτόκολλο (scheme)
+      if (!fullUrl.startsWith('http://') && !fullUrl.startsWith('https://') && !fullUrl.startsWith('mailto:')) {
+        fullUrl = 'https://$url';
+      }
+
+      final uri = Uri.tryParse(fullUrl);
+      
+      // ΒΗΜΑ 2: Εκκίνηση URL
+      if (uri != null && await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.inAppWebView);
+      } else {
+        // ΒΗΜΑ 3: Εμφανίζουμε μήνυμα αποτυχίας στον χρήστη (SnackBar)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Δεν ήταν δυνατή η φόρτωση του συνδέσμου: $url'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+        print('Could not launch $fullUrl');
+      }
+    }
   }
 
   @override
@@ -138,6 +171,9 @@ class _DetailScreenState extends ConsumerState<DetailScreen> {
                           textAlign: TextAlign.center,
                           padding: HtmlPaddings.symmetric(horizontal: 8),
                         ),
+                      },
+                      onLinkTap: (url, attributes, element) { 
+                        _launchURL(url); 
                       },
                     ),
                     const SizedBox(height: 120),

@@ -41,5 +41,20 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+                <!-- Αν πρόκειται για σύνδεσμο HTTPS -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <!-- Αν πρόκειται για σύνδεσμο HTTP (για συμβατότητα) -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
+        <!-- Αν θέλετε να υποστηρίξετε και mailto: (προαιρετικό, αλλά χρήσιμο) -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="mailto" />
+        </intent>
     </queries>
 </manifest>
