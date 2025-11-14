@@ -1,10 +1,9 @@
 // lib/screens/splash_screen.dart
-
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
+import '../main.dart'; // Για το MainScreen
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key); // ΣΩΣΤΟ
+  const SplashScreen({super.key}); // Χωρίς Key? key
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -16,9 +15,11 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     Future.delayed(const Duration(seconds: 4), () {
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => const MainScreen(),
+            transitionDuration: Duration.zero,
+          ),
         );
       }
     });
@@ -27,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF6A1B9A),
+      backgroundColor: const Color(0xFF6A1B9A), // Μωβ HVA
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -41,10 +42,14 @@ class _SplashScreenState extends State<SplashScreen> {
                 color: Colors.white,
                 fontSize: 38,
                 fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
               ),
             ),
             const SizedBox(height: 80),
-            const CircularProgressIndicator(color: Colors.white),
+            const CircularProgressIndicator(
+              color: Colors.white,
+              strokeWidth: 3,
+            ),
           ],
         ),
       ),

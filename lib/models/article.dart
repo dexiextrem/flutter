@@ -6,7 +6,7 @@ class Article {
   final String id;
   final String title;
   final String date;
-  final String mainImage;           // ΝΕΟ: Κύρια εικόνα από API
+  final String? mainImage;           // ΝΕΟ: Κύρια εικόνα από API
   final List<String> galleryImages; // ΝΕΟ: Λίστα με εικόνες gallery
   final String content;
   final String link;

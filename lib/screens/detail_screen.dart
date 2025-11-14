@@ -1,4 +1,4 @@
-// lib/screens/detail_screen.dart (ΤΕΛΙΚΟ – ΜΕ DARK MODE, ΧΩΡΙΣ GRADIENT, ΛΕΥΚΟ/ΜΑΥΡΟ ΦΟΝΤΟ)
+// lib/screens/detail_screen.dart (ΝΕΟ APPBAR – CLICKABLE → ΑΡΧΙΚΗ)
 
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart'; 
@@ -76,7 +76,6 @@ class _DetailScreenState extends ConsumerState<DetailScreen> {
     }
   }
 
-  // ΔΙΟΡΘΩΜΕΝΗ _openGallery
   void _openGallery(Article article, int index) {
     Navigator.push(
       context,
@@ -98,12 +97,45 @@ class _DetailScreenState extends ConsumerState<DetailScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
+
+      // ΝΕΟ CLICKABLE APPBAR – ΠΑΤΑΣ ΟΠΟΥΔΗΠΟΤΕ → ΑΡΧΙΚΗ
       appBar: AppBar(
         backgroundColor: const Color(0xFF6A1B9A),
-        foregroundColor: Colors.white,
-        title: const Text('Άρθρο'),
         elevation: 0,
+        automaticallyImplyLeading: false, // ΑΦΑΙΡΕΙ ΤΟ BACK ARROW
+        flexibleSpace: InkWell(
+          onTap: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const HomeScreen()),
+              (route) => false,
+            );
+          },
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  Image.asset('assets/images/hva_logo.png', height: 40),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'ΠΑΝΕΛΛΗΝΙΟΣ ΚΤΗΝΙΑΤΡΙΚΟΣ ΣΥΛΛΟΓΟΣ',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        height: 1.1,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
+
       body: RefreshIndicator(
         onRefresh: _refresh,
         color: const Color(0xFF6A1B9A),
@@ -156,7 +188,7 @@ class _DetailScreenState extends ConsumerState<DetailScreen> {
                     const SizedBox(height: 20),
 
                     // 3. ΚΥΡΙΑ ΕΙΚΟΝΑ
-                    if (article.mainImage.isNotEmpty)
+                    if (article.mainImage?.isNotEmpty ?? false)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(16),
                         child: CachedNetworkImage(
@@ -194,7 +226,7 @@ class _DetailScreenState extends ConsumerState<DetailScreen> {
                       },
                     ),
 
-                    // 5. GALLERY – ΣΤΟ ΤΕΛΟΣ
+                    // 5. GALLERY
                     if (article.galleryImages.isNotEmpty) ...[
                       const SizedBox(height: 32),
                       Text("Φωτογραφίες", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
@@ -225,7 +257,7 @@ class _DetailScreenState extends ConsumerState<DetailScreen> {
                       ),
                     ],
 
-                    // 6. YOUTUBE – ΣΤΟ ΤΕΛΟΣ
+                    // 6. YOUTUBE
                     if (_ytController != null) ...[
                       const SizedBox(height: 32),
                       Text("Βίντεο", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
