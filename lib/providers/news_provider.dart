@@ -1,4 +1,4 @@
-// lib/providers/news_provider.dart (ΤΟ ΔΙΚΟ ΣΟΥ – 77 ΓΡΑΜΜΕΣ – ΜΟΝΟ ΔΙΟΡΘΩΜΕΝΟ fetchArticle)
+// lib/providers/news_provider.dart (ΜΟΝΟ fetchArticle ΔΙΟΡΘΩΜΕΝΟ – 77 ΓΡΑΜΜΕΣ)
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -54,7 +54,7 @@ class Top3Notifier extends StateNotifier<AsyncValue<List<Article>>> {
     }
   }
 
-  // ΔΙΟΡΘΩΜΕΝΟ fetchArticle – ΜΕ DEBUG + ΕΛΕΓΧΟ
+  // ΔΙΟΡΘΩΜΕΝΟ fetchArticle – ΔΙΑΒΑΖΕΙ main_image + gallery_images
   Future<Article?> fetchArticle(int id) async {
     if (id <= 0) return null;
 
@@ -81,6 +81,10 @@ class Top3Notifier extends StateNotifier<AsyncValue<List<Article>>> {
         if (rawContent.trim().isEmpty) {
           print('ΠΡΟΕΙΔΟΠΟΙΗΣΗ: content είναι κενό');
         }
+
+        // ΕΛΕΓΧΟΣ main_image + gallery_images
+        print('MAIN_IMAGE: ${jsonData['main_image']}');
+        print('GALLERY_IMAGES: ${jsonData['gallery_images']}');
 
         return Article.fromJson(jsonData);
       } else {

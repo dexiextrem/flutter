@@ -1,72 +1,35 @@
 // lib/providers/theme_provider.dart
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// 1. Καθορισμός του Notifier (η λογική)
-class ThemeNotifier extends StateNotifier<ThemeMode> {
-  ThemeNotifier() : super(ThemeMode.system);
-
-  void switchTheme() {
-    state = (state == ThemeMode.dark) ? ThemeMode.light : ThemeMode.dark;
-  }
-}
-
-// 2. Δημιουργία του Provider (ο τρόπος πρόσβασης)
 final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
   return ThemeNotifier();
 });
 
-// 3. Καθορισμός των Themes (πώς θα φαίνεται η εφαρμογή)
+class ThemeNotifier extends StateNotifier<ThemeMode> {
+  ThemeNotifier() : super(ThemeMode.light) {
+    _loadTheme();
+  }
 
-// Light Theme
-final lightTheme = ThemeData(
-  primarySwatch: Colors.deepPurple, 
-  brightness: Brightness.light,
-  scaffoldBackgroundColor: Colors.white,
-  
-  appBarTheme: AppBarTheme(
-    backgroundColor: Colors.deepPurple[800],
-    foregroundColor: Colors.white,
-  ),
-  
-  bottomNavigationBarTheme: BottomNavigationBarThemeData(
-    selectedItemColor: Colors.deepPurple[800],
-    unselectedItemColor: Colors.grey,
-    backgroundColor: Colors.white,
-  ),
-  
-  // Card Settings (για τις λίστες άρθρων)
-  // ΤΕΛΙΚΗ ΛΥΣΗ: Χρησιμοποιούμε την μέθοδο CardTheme.copyWith() για να 
-  // παρακάμψουμε τον αυστηρό έλεγχο τύπου του compiler σας.
-  cardTheme: const CardTheme().copyWith( // Χρησιμοποιεί την αρχική τιμή και την τροποποιεί
-    elevation: 8,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(15))),
-    margin: EdgeInsets.zero,
-  ),
-);
+  static const String _themeKey = 'theme_mode';
 
-// Dark Theme
-final darkTheme = ThemeData(
-  primarySwatch: Colors.deepPurple,
-  brightness: Brightness.dark,
-  scaffoldBackgroundColor: Colors.grey[900], 
-  
-  appBarTheme: AppBarTheme(
-    backgroundColor: Colors.deepPurple[700],
-    foregroundColor: Colors.white,
-  ),
-  
-  bottomNavigationBarTheme: BottomNavigationBarThemeData(
-    selectedItemColor: Colors.deepPurple[400],
-    unselectedItemColor: Colors.grey[500],
-    backgroundColor: Colors.grey[850],
-  ),
-  
-  // Card Settings
-  cardTheme: const CardTheme().copyWith(
-    color: Colors.grey[800], // Σκούρες κάρτες
-    elevation: 4,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-  ),
-);
+  Future<void> _loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedTheme = prefs.getString(_themeKey);
+    if (savedTheme == 'dark') {
+      state = ThemeMode.dark;
+    } else if (savedTheme == 'light') {
+      state = ThemeMode.light;
+    } else {
+      state = ThemeMode.system; // default
+    }
+  }
+
+  Future<void> setTheme(ThemeMode themeMode) async {
+    state = themeMode;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_themeKey, themeMode.toString().split('.').last);
+  }
+}

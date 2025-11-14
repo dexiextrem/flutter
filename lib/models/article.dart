@@ -1,4 +1,4 @@
-// lib/models/article.dart (ΤΕΛΙΚΟ – ΕΝΙΣΧΥΜΕΝΟ ΓΙΑ <p><br> ΧΩΡΙΣ </p>)
+// lib/models/article.dart (ΤΕΛΙΚΟ – ΜΕ mainImage + galleryImages – ΧΩΡΙΣ image)
 
 import 'dart:developer' as devtools;
 
@@ -6,7 +6,8 @@ class Article {
   final String id;
   final String title;
   final String date;
-  final String image;
+  final String mainImage;           // ΝΕΟ: Κύρια εικόνα από API
+  final List<String> galleryImages; // ΝΕΟ: Λίστα με εικόνες gallery
   final String content;
   final String link;
 
@@ -14,7 +15,8 @@ class Article {
     required this.id,
     required this.title,
     required this.date,
-    required this.image,
+    required this.mainImage,
+    required this.galleryImages,
     required this.content,
     this.link = '',
   });
@@ -42,38 +44,39 @@ class Article {
 
     // ΕΝΙΣΧΥΜΕΝΟΣ ΚΑΘΑΡΙΣΜΟΣ ΓΙΑ <p><br> ΧΩΡΙΣ </p>
     rawContent = rawContent
-        // <p><br> χωρίς </p> – προσθέτουμε </p> και αφαιρούμε
         .replaceAll(RegExp(r'<p>\s*<br\s*/?>(?!\s*</p>)', caseSensitive: false), '<p></p>')
-        .replaceAll(RegExp(r'<p>\s*<br\s*/?>\s*</p>', caseSensitive: false), '') // Τώρα κλεισμένες
-        // <p></p> και <p> </p>
+        .replaceAll(RegExp(r'<p>\s*<br\s*/?>\s*</p>', caseSensitive: false), '')
         .replaceAll(RegExp(r'<p>\s*</p>', caseSensitive: false), '')
-        // <p>&nbsp;</p> και <p> </p>
         .replaceAll(RegExp(r'<p>\s*&nbsp;\s*</p>', caseSensitive: false), '')
         .replaceAll(RegExp(r'<p>\s* \s*</p>', caseSensitive: false), '')
-        // Πολλαπλές κενές
         .replaceAll(RegExp(r'(<p>\s*</p>\s*)+', caseSensitive: false), '')
-        // [TAGS]
         .replaceAll(RegExp(r'\[[^\]]+\]'), '')
-        // Πολλαπλά κενά
         .replaceAll(RegExp(r'\s{2,}'), ' ')
         .trim();
 
     final String finalContent = rawContent.isEmpty
         ? '<p>Δεν υπάρχει περιεχόμενο.</p>'
-        : '<p>$rawContent</p>'; // Επαναφορά <p>
+        : '<p>$rawContent</p>';
 
     final String formattedDate = json['indate']?.toString() ??
         json['publication_date']?.toString() ??
         json['date']?.toString() ??
         'Χωρίς ημερομηνία';
 
-    final String imageUrl = json['image_url']?.toString() ?? json['image']?.toString() ?? '';
+    // ΝΕΟ: main_image από API
+    final String mainImageUrl = json['main_image']?.toString() ?? '';
+
+    // ΝΕΟ: gallery_images από API
+    final List<String> galleryImagesList = json['gallery_images'] != null
+        ? List<String>.from(json['gallery_images'].map((x) => x.toString()))
+        : <String>[];
 
     return Article(
       id: finalId,
       title: json['title']?.toString() ?? 'Χωρίς τίτλο',
       date: formattedDate,
-      image: imageUrl,
+      mainImage: mainImageUrl,
+      galleryImages: galleryImagesList,
       content: finalContent,
       link: link,
     );

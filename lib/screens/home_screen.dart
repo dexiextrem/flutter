@@ -1,4 +1,4 @@
-// lib/screens/home_screen.dart (ΤΕΛΙΚΟ – ΧΟΡΗΓΟΣ ΚΑΤΩ, ΚΑΡΤΑ ΚΕΝΤΡΑΡΙΣΜΕΝΗ)
+// lib/screens/home_screen.dart (ΤΕΛΙΚΟ – ΜΕ DARK MODE ΑΠΟ ΚΙΝΗΤΟ)
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,28 +12,31 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final top3Async = ref.watch(top3NewsProvider);
+    final isDark = MediaQuery.of(context).platformBrightness == Brightness.dark;
 
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: () async {
           await ref.read(top3NewsProvider.notifier).fetchTop3();
         },
-        color: const Color(0xFF6A1B9A),
-        backgroundColor: Colors.white,
+        color: const Color.fromARGB(255, 197, 162, 218),
+        backgroundColor: isDark ? Colors.grey[900] : Colors.white,
         strokeWidth: 3,
         displacement: 40,
         child: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0xFF6A1B9A), Color(0xFFF3E5F5)],
+              colors: [
+                const Color(0xFF6A1B9A),
+                isDark ? const Color(0xFF1F1F1F) : const Color.fromARGB(255, 255, 255, 255),
+              ],
             ),
           ),
           child: SafeArea(
-            child: Stack( // ΧΡΗΣΙΜΟΠΟΙΟΥΜΕ Stack
+            child: Stack(
               children: [
-                // ΑΝΑΝΕΩΣΙΜΟ ΠΕΡΙΕΧΟΜΕΝΟ (ΚΑΡΤΑ)
                 ListView(
                   children: [
                     // LOGO + TITLE
@@ -43,7 +46,7 @@ class HomeScreen extends ConsumerWidget {
                         children: [
                           Image.asset('assets/images/hva_logo.png', height: 130),
                           const SizedBox(width: 14),
-                          const Expanded(
+                          Expanded(
                             child: Text(
                               'ΠΑΝΕΛΛΗΝΙΟΣ\nΚΤΗΝΙΑΤΡΙΚΟΣ\nΣΥΛΛΟΓΟΣ',
                               style: TextStyle(
@@ -58,7 +61,6 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     ),
 
-                    // ΚΕΝΤΡΙΚΗ ΚΑΡΤΑ – ΚΕΝΤΡΑΡΙΣΜΕΝΗ
                     const SizedBox(height: 30),
                     Center(
                       child: Container(
@@ -69,23 +71,27 @@ class HomeScreen extends ConsumerWidget {
                           maxHeight: MediaQuery.of(context).size.height * 0.55,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: isDark ? const Color(0xFF1F1F1F) : Colors.white,
                           borderRadius: BorderRadius.circular(30),
                           boxShadow: [
-                            BoxShadow(color: Colors.black26, blurRadius: 10, offset: const Offset(0, 4)),
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
                           ],
                         ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Padding(
-                              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
                               child: Text(
                                 'Τελευταία Νέα',
                                 style: TextStyle(
-                                  fontSize: 26,
+                                  fontSize: 30,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF6A1B9A),
+                                   color: isDark ? Colors.white : const Color(0xFF6A1B9A),
                                 ),
                               ),
                             ),
@@ -144,7 +150,7 @@ class HomeScreen extends ConsumerWidget {
                               },
                               loading: () => const Padding(
                                 padding: EdgeInsets.all(40),
-                                child: CircularProgressIndicator(color: Color(0xFF6A1B9A)),
+                                child: CircularProgressIndicator(color: Color.fromARGB(255, 197, 162, 218)),
                               ),
                               error: (err, _) => Padding(
                                 padding: const EdgeInsets.all(20),
@@ -165,11 +171,11 @@ class HomeScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 120), // ΧΩΡΟΣ ΓΙΑ ΧΟΡΗΓΟ
+                    const SizedBox(height: 120),
                   ],
                 ),
 
-                // ΧΟΡΗΓΟΣ – ΣΤΑΘΕΡΟΣ ΚΑΤΩ
+                // ΧΟΡΗΓΟΣ
                 Positioned(
                   bottom: 10,
                   left: 0,
@@ -178,9 +184,13 @@ class HomeScreen extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
                       children: [
-                        const Text(
+                        Text(
                           'ΧΟΡΗΓΟΣ:',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF6A1B9A)),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : const Color(0xFF6A1B9A),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Image.asset('assets/images/sponsor_logo.png', height: 65),
@@ -195,9 +205,9 @@ class HomeScreen extends ConsumerWidget {
       ),
 
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? const Color(0xFF1F1F1F) : Colors.white,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF6A1B9A),
+        selectedItemColor: const Color.fromARGB(255, 151, 99, 189),
         unselectedItemColor: Colors.grey,
         currentIndex: 0,
         items: const [
